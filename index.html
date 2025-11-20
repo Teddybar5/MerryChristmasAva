@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎄 Advent Calendar 🎄</title>
+  <style>
+    body {
+    background: url("images/backgroundGreen.jpg") no-repeat center center fixed;
+    background-size: cover;
+    margin: 0;
+    font-family: "Poppins", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    min-height: 100vh;
+    color: rgb(0, 0, 0);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(6, 90px);
+      grid-gap: 12px;
+      justify-content: center;
+      background-color: #a00000;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .door {
+      width: 90px;
+      height: 90px;
+      background: linear-gradient(to bottom right, #b30000, #8b0000);
+      border: 2px solid #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.8rem;
+      font-weight: bold;
+      position: relative;
+      cursor: pointer;
+      color: white;
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    .door:hover {
+      box-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+      transform: scale(1.05);
+    }
+
+    .door.open {
+      background: #ffffff;
+      color: #b30000;
+    }
+
+    button {
+      margin-top: 20px;
+      background-color: white;
+      color: #b30000;
+      border: none;
+      padding: 10px 20px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #ffcc00;
+      color: #222;
+    }
+
+    /* --- Popup (Message Box) --- */
+    .popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .popup-content {
+      background: white;
+      color: #b30000;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      width: 300px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      animation: fadeIn 0.3s ease;
+    }
+
+    .popup-content h2 {
+      margin-top: 0;
+    }
+
+    .close-btn {
+      background: #b30000;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 15px;
+      margin-top: 15px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .close-btn:hover {
+      background: #ffcc00;
+      color: #222;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    #devBtn {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    opacity: 0.8;
+    transition: 0.2s;
+    z-index: 1000;
+    }
+
+    #devBtn:hover {
+    opacity: 1;
+    background-color: #555;
+    }
+
+    .door.locked {
+    background-color: #555;
+    cursor: not-allowed;
+    opacity: 0.7;
+    color: #aaa;
+    }
+
+    @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    }
+
+    .door.shake {
+    animation: shake 0.6s;
+    }
+
+    /* Door-opening animation */
+    @keyframes doorOpen {
+      0% {
+        transform: perspective(600px) rotateY(-90deg);
+        opacity: 0;
+      }
+      60% {
+        transform: perspective(600px) rotateY(10deg);
+        opacity: 1;
+      }
+      100% {
+        transform: perspective(600px) rotateY(0deg);
+      }
+    }
+
+    .popup-content {
+      transform-origin: left center; /* Hinge on the left */
+      animation: none; /* By default no animation */
+    }
+
+    /* Snowfall effect */
+    .snowflake {
+      position: fixed;
+      top: -10px;
+      color: white;
+      font-size: 1em;
+      user-select: none;
+      pointer-events: none;
+      animation-name: fall;
+      animation-timing-function: linear;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh) translateX(var(--drift));
+        opacity: 0.8;
+      }
+    }
+
+  </style>
+</head>
+<body>
+  <h1>🎁 Merry Christmas My Love!! 🎁</h1>
+  <div class="calendar" id="calendar"></div>
+
+  <!-- Popup -->
+  <div id="popup" class="popup">
+    <div class="popup-content">
+      <h2 id="popup-title">Day</h2>
+      <video id="popup-video" width="260" controls style="border-radius:10px;">
+        <source id="popup-src" src="" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <button class="close-btn" id="closePopup">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const videos = [
+        "", //empty first element to align days with indices
+        "videos/day1.mp4",
+        "videos/day2.mp4",
+        "videos/day3.mp4",
+        "videos/day4.mp4",
+        "videos/day5.mp4",
+        // ... continue up to Day 24
+    ];
+
+    const calendar = document.getElementById("calendar");
+    const popup = document.getElementById("popup");
+    const popupTitle = document.getElementById("popup-title");
+    const popupMessage = document.getElementById("popup-message");
+    const closePopup = document.getElementById("closePopup");
+
+    const today = new Date();
+    const currentMonth = today.getMonth(); // 0 = January, 11 = December
+    const currentDay = today.getDate(); // 1–31
+    let devMode = false;
+
+    // Create Dev Mode toggle button
+    const devBtn = document.createElement("button");
+    devBtn.textContent = "🧩 Dev Mode: OFF";
+    devBtn.id = "devBtn";
+    document.body.appendChild(devBtn);
+
+    devBtn.addEventListener("click", () => {
+        devMode = !devMode;
+        devBtn.textContent = devMode ? "🧩 Dev Mode: ON" : "🧩 Dev Mode: OFF";
+        updateDoors();
+    });
+
+    // Create 24 doors dynamically
+    for (let i = 1; i <= 24; i++) {
+        const door = document.createElement("div");
+        door.classList.add("door");
+        door.textContent = i;
+
+        door.addEventListener("click", () => {
+        if (door.classList.contains("locked")) {
+            door.classList.add("shake");
+            setTimeout(() => door.classList.remove("shake"), 600);
+        } else {
+            door.classList.add("open");
+            showPopup(i);
+        }
+        });
+
+        calendar.appendChild(door);
+    }
+
+    // Function to update lock state of doors
+    function updateDoors() {
+        const doors = document.querySelectorAll(".door");
+        doors.forEach((door, index) => {
+        const day = index + 1;
+
+        // Unlock all if Dev Mode is ON
+        if (devMode) {
+            door.classList.remove("locked");
+            door.title = "";
+            return;
+        }
+
+        // Real-world logic
+        if (currentMonth !== 11) {
+            door.classList.add("locked");
+            door.title = "🎄 Doors unlock in December!";
+        } else if (day > currentDay) {
+            door.classList.add("locked");
+            door.title = "🔒 This door isn’t unlocked yet!";
+        } else {
+            door.classList.remove("locked");
+            door.title = "";
+        }
+        });
+    }
+
+    // Popup logic
+    function showPopup(day) {
+        popupTitle.textContent = `Day ${day}`;
+
+        const video = document.getElementById("popup-video");
+        const source = document.getElementById("popup-src");
+
+        source.src = videos[day] || "";
+        video.load();
+        video.play();
+
+        popup.style.display = "flex";
+
+        // Re-trigger door animation
+        const box = document.querySelector(".popup-content");
+        box.style.animation = "none";
+        void box.offsetWidth; // Force reflow
+        box.style.animation = "doorOpen 0.6s ease forwards";
+    }
+
+
+    closePopup.addEventListener("click", () => {
+        const video = document.getElementById("popup-video");
+        video.pause();
+        popup.style.display = "none";
+    });
+
+    popup.addEventListener("click", (e) => {
+        if (e.target === popup) {
+            const video = document.getElementById("popup-video");
+            video.pause();
+            popup.style.display = "none";
+        }
+    });
+
+    // Create realistic falling snowflakes
+    function createSnowflake() {
+        const snowflake = document.createElement("div");
+        snowflake.classList.add("snowflake");
+        snowflake.textContent = "❅";
+
+        // Random horizontal start position
+        snowflake.style.left = Math.random() * 100 + "vw";
+
+        // Random size
+        const size = Math.random() * 0.8 + 0.2;
+        snowflake.style.fontSize = size + "rem";
+
+        // Random drift direction
+        snowflake.style.setProperty("--drift", (Math.random() * 40 - 20) + "px");
+
+        // Random fall duration
+        const duration = Math.random() * 5 + 5; // 5–10 seconds
+        snowflake.style.animationDuration = duration + "s";
+
+        document.body.appendChild(snowflake);
+
+        // Remove after animation
+        setTimeout(() => snowflake.remove(), duration * 1000);
+    }
+
+    // Generate snowflakes continuously
+    setInterval(createSnowflake, 150); // every 150ms
+
+
+    // Run initial lock check
+    updateDoors();
+
+
+    </script>
+
+</body>
+</html>
